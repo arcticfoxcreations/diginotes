@@ -6,8 +6,7 @@ No backend, no database, no sign-up. The whole letter is packed into the link it
 
 ## How it works
 
-1. **Pick an occasion** — Birthday, Anniversary, Friendship, or Just Because. Each has its own flower, its own drifting background motif (lanterns, falling petals, clovers, butterflies), and — on the final preview step — a few color variants to pick from (e.g. marigold / sunflower / poppy for Birthday).
-   - Picking a card takes you straight to the next step after a moment — there's no need to also click "next" — but the Next button is still there if you'd rather double-check your pick first.
+1. **Pick an occasion** — Birthday, Anniversary, Friendship, or Just Because. Each has its own flower, its own drifting background motif (lanterns, falling petals, clovers, butterflies), and — on the final preview step — a few color variants to pick from (e.g. marigold / sunflower / poppy for Birthday). Tap a card to select it, then hit Next.
 2. **Add a song (optional)** — paste a YouTube or Spotify link.
    - **YouTube**: you can scrub through the song and mark the exact second it should start playing for the other person (or hit "surprise me" for a random moment). It loops cleanly from there.
    - **Spotify**: Spotify only allows embedding its own preview player — there's no way to script a start time or looping without the person logging into Spotify. So Spotify tracks show up as Spotify's own compact player, which the recipient can press play on.
