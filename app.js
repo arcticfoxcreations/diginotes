@@ -3,42 +3,40 @@
 // ---------------------------------------------------------------
 const SUPABASE_URL = 'https://myezfpifwwlzggqfsgts.supabase.co/rest/v1/';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15ZXpmcGlmd3dsemdncWZzZ3RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxNjczNDcsImV4cCI6MjA5ODc0MzM0N30.G_DFS9W6GCTgbXD8eOJLuzEHKtAUP_1P-p6YDL1cgFg';
-const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+let supabase = null;
+
+// Wrap initialization in a try/catch so the app doesn't crash if keys are missing
+try {
+  if (typeof window.supabase !== 'undefined' && SUPABASE_URL.includes('supabase.co')) {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  }
+} catch (e) {
+  console.error("Supabase initialization failed. Check your URL and Key.", e);
+}
 
 // ---------------------------------------------------------------
-// 1. Updated Themes
+// 2. Constants & Theme Definitions
 // ---------------------------------------------------------------
+
 const THEMES = {
   romantic: {
-    label: 'Romantic Garden', flowerName: 'rose',
-    petals: 8, rings: 2, petalColor: '#e6a3b0', petalColor2: '#b5495b',
-    center: '#7d2534', stroke: '#7d2534', petalShape: 'round',
-    floaty: 'petal'
+    label: 'Romantic Garden', floaty: 'petal', accent: '#9e2a2b',
+    flower: { petals: 8, rings: 2, pColor: '#e6a3b0', pColor2: '#b5495b', center: '#7d2534', shape: 'round' }
   },
   cherry: {
-    label: 'Cherry Blossom', flowerName: 'sakura',
-    petals: 5, rings: 1, petalColor: '#ffb7c5', petalColor2: '#ffb7c5',
-    center: '#f08080', stroke: '#ff8fab', petalShape: 'slim',
-    floaty: 'sakura'
+    label: 'Cherry Blossom', floaty: 'sakura', accent: '#ff8fab',
+    flower: { petals: 5, rings: 1, pColor: '#ffb7c5', pColor2: '#ffb7c5', center: '#f08080', shape: 'slim' }
   },
   butterfly: {
-    label: 'Butterfly Dreams', flowerName: 'wildflower',
-    petals: 6, rings: 1, petalColor: '#c3b8e8', petalColor2: '#a190d6',
-    center: '#e8c468', stroke: '#5f4a8a', petalShape: 'wide',
-    floaty: 'butterfly'
+    label: 'Butterfly Dreams', floaty: 'butterfly', accent: '#7b2cbf',
+    flower: { petals: 6, rings: 1, pColor: '#c3b8e8', pColor2: '#a190d6', center: '#e8c468', shape: 'wide' }
   },
   minimal: {
-    label: 'Minimal White', flowerName: 'lily',
-    petals: 10, rings: 1, petalColor: '#ffffff', petalColor2: '#f0f0f0',
-    center: '#d3d3d3', stroke: '#4a4e69', petalShape: 'thin',
-    floaty: 'sparkle'
+    label: 'Minimal White', floaty: 'sparkle', accent: '#4a4e69',
+    flower: { petals: 10, rings: 1, pColor: '#ffffff', pColor2: '#f0f0f0', center: '#d3d3d3', shape: 'thin' }
   }
 };
-const THEME_ORDER = ['romantic', 'cherry', 'butterfly', 'minimal'];
 
-// ---------------------------------------------------------------
-// 2. Curated Fonts & Stickers
-// ---------------------------------------------------------------
 const FONT_OPTIONS = [
   { id: 'caveat',  label: 'Handwriting', family: "'Caveat', cursive" },
   { id: 'garamond', label: 'Classic Serif', family: "'EB Garamond', serif" },
@@ -56,44 +54,48 @@ const STICKERS = {
 };
 
 // ---------------------------------------------------------------
-// 3. App State & Logic
+// 3. State & Navigation
 // ---------------------------------------------------------------
-const draft = {
-  theme: null, variant: 0, music: null,
-  to: '', from: '', body: '',
+
+let draft = {
+  theme: 'minimal', music: null, to: '', from: '', body: '',
   font: 'caveat', photos: [], stickers: []
 };
 
-// --- Navigation ---
-function showScreen(id){
+function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const target = document.getElementById('screen-' + id);
-  if(target) target.classList.add('active');
+  if (target) target.classList.add('active');
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-document.querySelectorAll('[data-nav]').forEach(btn => {
-  btn.addEventListener('click', () => showScreen(btn.getAttribute('data-nav')));
-});
+// ---------------------------------------------------------------
+// 4. UI Builders
+// ---------------------------------------------------------------
 
-document.getElementById('btn-start').addEventListener('click', () => showScreen('occasion'));
+function makeFlowerSVG(themeId, size) {
+  const f = THEMES[themeId].flower;
+  let petals = '';
+  for (let i = 0; i < f.petals; i++) {
+    const angle = (360 / f.petals) * i;
+    petals += `<ellipse cx="50" cy="35" rx="10" ry="20" fill="${f.pColor}" transform="rotate(${angle} 50 50)" opacity="0.7"/>`;
+  }
+  return `<svg viewBox="0 0 100 100" width="${size}" height="${size}">${petals}<circle cx="50" cy="50" r="8" fill="${f.center}"/></svg>`;
+}
 
-// --- Step 1: Occasion ---
-function buildOccasionGrid(){
+function buildOccasionGrid() {
   const grid = document.getElementById('occasion-grid');
+  if (!grid) return;
   grid.innerHTML = '';
-  THEME_ORDER.forEach(id => {
+  Object.keys(THEMES).forEach(id => {
     const card = document.createElement('div');
     card.className = 'occasion-card';
-    card.innerHTML = makeFlowerSVG(id, 56) + `<p style="font-size:0.7rem; margin-top:8px;">${THEMES[id].label}</p>`;
+    card.innerHTML = makeFlowerSVG(id, 60) + `<p style="margin-top:10px; font-size:0.8rem; text-transform:uppercase; letter-spacing:1px;">${THEMES[id].label}</p>`;
     card.onclick = () => {
       draft.theme = id;
       document.body.setAttribute('data-theme', id);
       spawnFloaties(id);
-      
-      // Auto-next logic
-      const isMobile = window.innerWidth <= 768;
-      if (!isMobile) {
+      if (window.innerWidth > 768) {
         showScreen('music');
       } else {
         document.querySelectorAll('.occasion-card').forEach(c => c.classList.remove('selected'));
@@ -104,14 +106,10 @@ function buildOccasionGrid(){
     grid.appendChild(card);
   });
 }
-document.getElementById('occasion-next').onclick = () => showScreen('music');
 
-// --- Step 2: Music (Preserved YouTube/Spotify logic) ---
-// (Note: Keep your existing YouTube API and extract functions from previous app.js)
-
-// --- Step 3: Note & Fonts ---
-function buildFontPicker(){
+function buildFontPicker() {
   const row = document.getElementById('font-chip-row');
+  if (!row) return;
   row.innerHTML = '';
   FONT_OPTIONS.forEach(f => {
     const chip = document.createElement('button');
@@ -127,123 +125,144 @@ function buildFontPicker(){
     row.appendChild(chip);
   });
 }
-document.getElementById('note-next').onclick = () => {
-  draft.to = document.getElementById('note-to').value || 'you';
-  draft.from = document.getElementById('note-from').value || 'me';
-  draft.body = document.getElementById('note-body').value;
-  showScreen('photos');
-};
 
-// --- Link Generation (SUPABASE) ---
-async function generateShortLink() {
-  const btn = document.getElementById('btn-get-link');
-  btn.textContent = 'generating...';
-  
-  if (!supabase) {
-    alert("Supabase not configured properly.");
-    btn.textContent = 'get link';
-    return;
-  }
-
-  const { data, error } = await supabase
-    .from('Notes')
-    .insert([{ data: draft }])
-    .select();
-
-  if (error) {
-    console.error(error);
-    btn.textContent = 'error!';
-    return;
-  }
-
-  const id = data[0].id;
-  const shortUrl = `${window.location.origin}${window.location.pathname}?id=${id}`;
-  
-  navigator.clipboard.writeText(shortUrl).then(() => {
-    btn.textContent = 'copied ✓';
-    setTimeout(() => btn.textContent = 'get link', 3000);
+function buildStickerGrid() {
+  const grid = document.getElementById('sticker-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+  Object.keys(STICKERS).forEach(id => {
+    const chip = document.createElement('button');
+    chip.className = 'sticker-chip' + (draft.stickers.includes(id) ? ' selected' : '');
+    chip.innerHTML = STICKERS[id];
+    chip.onclick = () => {
+      if (draft.stickers.includes(id)) {
+        draft.stickers = draft.stickers.filter(s => s !== id);
+      } else if (draft.stickers.length < 4) {
+        draft.stickers.push(id);
+      }
+      buildStickerGrid();
+    };
+    grid.appendChild(chip);
   });
 }
 
-document.getElementById('btn-get-link').onclick = generateShortLink;
-
-// --- Load from Supabase ---
-async function loadLetter(id) {
-  const { data, error } = await supabase
-    .from('Notes')
-    .select('data')
-    .eq('id', id)
-    .single();
-
-  if (error || !data) {
-    alert("Letter not found.");
-    return;
-  }
-  
-  renderRecipientView(data.data);
-}
-
 // ---------------------------------------------------------------
-// 4. Helper Functions (Flowers, Floaties, etc.)
+// 5. Decorations (Floaties)
 // ---------------------------------------------------------------
-function makeFlowerSVG(themeId, size, variantIdx = 0) {
-  const t = THEMES[themeId];
-  return `<svg viewBox="0 0 100 100" width="${size}" height="${size}"><circle cx="50" cy="50" r="15" fill="${t.petalColor}" opacity="0.8" /><circle cx="50" cy="50" r="5" fill="${t.center}" /></svg>`;
-}
 
 function spawnFloaties(themeId) {
   const host = document.getElementById('floaties');
+  if (!host) return;
   host.innerHTML = '';
   const kind = THEMES[themeId].floaty;
-  for (let i = 0; i < 15; i++) {
+  for (let i = 0; i < 12; i++) {
     const el = document.createElement('div');
     el.className = 'floaty';
     el.style.left = Math.random() * 100 + 'vw';
-    el.style.animation = `drift-up ${15 + Math.random() * 10}s linear infinite`;
-    el.style.animationDelay = `-${Math.random() * 15}s`;
-    el.innerHTML = `<div style="color: ${THEMES[themeId].accent}; opacity: 0.3;">${getFloatySVG(kind)}</div>`;
+    const dur = 10 + Math.random() * 15;
+    el.style.animation = `drift-up ${dur}s linear infinite`;
+    el.style.animationDelay = `-${Math.random() * dur}s`;
+    el.style.color = THEMES[themeId].accent;
+    el.innerHTML = getFloatyIcon(kind);
     host.appendChild(el);
   }
 }
 
-function getFloatySVG(kind) {
-  if (kind === 'petal') return '<svg width="20" height="20"><path d="M10 0 Q15 10 10 20 Q5 10 10 0" fill="currentColor"/></svg>';
-  if (kind === 'sakura') return '<svg width="15" height="15"><circle r="7" cx="7" cy="7" fill="currentColor"/></svg>';
+function getFloatyIcon(kind) {
+  if (kind === 'petal') return '🌸';
+  if (kind === 'sakura') return '🌸';
+  if (kind === 'butterfly') return '🦋';
   return '✦';
 }
 
 // ---------------------------------------------------------------
-// 5. Boot
+// 6. Link Generation & Loading (Supabase)
 // ---------------------------------------------------------------
-function boot() {
-  const params = new URLSearchParams(window.location.search);
-  const id = params.get('id');
-  
-  if (id) {
-    loadLetter(id);
-  } else {
-    buildOccasionGrid();
-    buildFontPicker();
-    // buildStickerGrid(); // Implement similar to previous
-    spawnFloaties('minimal');
+
+async function generateLink() {
+  const btn = document.getElementById('btn-get-link');
+  if (!supabase) {
+    alert("Please configure your Supabase URL and Key in app.js");
+    return;
   }
+  
+  btn.textContent = 'Creating...';
+  const { data, error } = await supabase.from('Notes').insert([{ data: draft }]).select();
+
+  if (error) {
+    alert("Error saving letter: " + error.message);
+    btn.textContent = 'Get link';
+  } else {
+    const id = data[0].id;
+    const url = `${window.location.origin}${window.location.pathname}?id=${id}`;
+    navigator.clipboard.writeText(url).then(() => {
+      btn.textContent = 'Copied ✓';
+      setTimeout(() => btn.textContent = 'Get link', 3000);
+    });
+  }
+}
+
+async function loadLetter(id) {
+  if (!supabase) return;
+  const { data, error } = await supabase.from('Notes').select('data').eq('id', id).single();
+  if (data) renderRecipientView(data.data);
 }
 
 function renderRecipientView(state) {
   document.getElementById('app').hidden = true;
   document.getElementById('view').hidden = false;
   document.body.setAttribute('data-theme', state.theme);
-  document.documentElement.style.setProperty('--note-font', FONT_OPTIONS.find(f=>f.id===state.font).family);
+  const fontObj = FONT_OPTIONS.find(f => f.id === state.font) || FONT_OPTIONS[0];
+  document.documentElement.style.setProperty('--note-font', fontObj.family);
   
   const mount = document.getElementById('view-mount');
   mount.innerHTML = `
     <div class="letter-card">
-      <div style="color:var(--accent); margin-bottom:10px;">Dear ${state.to},</div>
-      <div class="letter-body">${state.body}</div>
-      <div style="text-align:right; margin-top:20px;">Sincerely, ${state.from}</div>
+       <div style="color:var(--accent); margin-bottom:1.5em; font-size:0.9rem;">Dear ${state.to},</div>
+       <div class="letter-body">${state.body}</div>
+       <div style="text-align:right; margin-top:2em;">
+          <span style="display:block; font-size:0.8rem; opacity:0.7;">Sincerely,</span>
+          <strong style="font-family:var(--note-font); font-size:1.6rem;">${state.from}</strong>
+       </div>
     </div>
   `;
   spawnFloaties(state.theme);
+}
+
+// ---------------------------------------------------------------
+// 7. Event Listeners & Boot
+// ---------------------------------------------------------------
+
+// Attach button listeners
+document.getElementById('btn-start').addEventListener('click', () => showScreen('occasion'));
+document.getElementById('occasion-next').onclick = () => showScreen('music');
+document.getElementById('music-next').onclick = () => showScreen('note');
+document.getElementById('note-next').onclick = () => {
+  draft.to = document.getElementById('note-to').value;
+  draft.from = document.getElementById('note-from').value;
+  draft.body = document.getElementById('note-body').value;
+  showScreen('photos');
+};
+document.getElementById('photos-next').onclick = () => {
+  // Simple preview render
+  const mount = document.getElementById('preview-mount');
+  mount.innerHTML = `<div class="letter-card"><div class="letter-body">${draft.body}</div></div>`;
+  showScreen('preview');
+};
+document.getElementById('btn-get-link').onclick = generateLink;
+document.getElementById('btn-make-own').onclick = () => window.location.href = window.location.origin + window.location.pathname;
+
+function boot() {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id');
+  if (id) {
+    loadLetter(id);
+  } else {
+    buildOccasionGrid();
+    buildFontPicker();
+    buildStickerGrid();
+    spawnFloaties('minimal');
+  }
 }
 
 boot();
