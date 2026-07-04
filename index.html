@@ -6,6 +6,7 @@
 <title>Dear, You — write a letter for someone</title>
 <meta name="description" content="Write a small, beautiful digital letter — with a song and a photo or two — and send the link to someone you love.">
 <link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
 </head>
 <body>
 
@@ -75,6 +76,10 @@
         <input id="note-from" placeholder="your name">
       </div>
     </div>
+    <div class="font-picker">
+      <p class="hint">pick a handwriting style</p>
+      <div class="font-chip-row" id="font-chip-row"></div>
+    </div>
     <div class="nav-row">
       <button class="btn btn-ghost" data-nav="music">back</button>
       <button class="btn btn-primary" id="note-next">next</button>
@@ -83,10 +88,18 @@
 
   <section class="screen" id="screen-photos">
     <p class="step-label">step 4 · optional</p>
-    <h2 class="screen-title">add a photo or two</h2>
+    <h2 class="screen-title">add a photo or a sticker</h2>
     <div class="photo-drop" id="photo-drop">tap to choose up to 2 photos<br><small>(kept small so your link stays easy to send)</small></div>
     <input type="file" id="photo-input" accept="image/*" multiple hidden>
     <div class="photo-preview-row" id="photo-preview-row"></div>
+
+    <div class="sticker-picker">
+      <p class="hint">add a sticker or two <small>(up to 4)</small></p>
+      <div class="sticker-grid" id="sticker-grid"></div>
+    </div>
+
+    <div class="size-meter" id="size-meter"></div>
+
     <div class="nav-row">
       <button class="btn btn-ghost" data-nav="note">back</button>
       <button class="btn btn-primary" id="photos-next">next</button>
@@ -96,7 +109,16 @@
   <section class="screen" id="screen-preview">
     <p class="step-label">step 5</p>
     <h2 class="screen-title">here's your letter</h2>
+
+    <div class="customize-panel">
+      <div class="customize-row">
+        <span class="cz-label">flower color</span>
+        <div id="variant-swatches" style="display:flex; gap:8px;"></div>
+      </div>
+    </div>
+
     <div id="preview-mount"></div>
+    <div class="size-meter" id="size-meter-preview"></div>
     <div class="action-row">
       <button class="btn btn-ghost" data-nav="photos">back</button>
       <button class="btn btn-accent" id="btn-get-link">get link</button>
