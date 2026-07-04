@@ -33,6 +33,31 @@ const THEMES = {
 };
 const THEME_ORDER = ['birthday', 'anniversary', 'friendship', 'justbecause'];
 
+// Extra color variants per occasion — same flower shape, different palette.
+const FLOWER_VARIANTS = {
+  birthday: [
+    { label: 'marigold',  petalColor:'#eab06a', petalColor2:'#d97a3f', center:'#a85321' },
+    { label: 'sunflower', petalColor:'#f4cf6e', petalColor2:'#e0a53a', center:'#7a4a1c' },
+    { label: 'poppy',     petalColor:'#f0876a', petalColor2:'#d1573a', center:'#7d2f1c' }
+  ],
+  anniversary: [
+    { label: 'rose',  petalColor:'#e6a3b0', petalColor2:'#b5495b', center:'#7d2534' },
+    { label: 'blush', petalColor:'#f2c9d6', petalColor2:'#d98aa0', center:'#8a3c53' },
+    { label: 'wine',  petalColor:'#c98a9a', petalColor2:'#7d2534', center:'#4a1520' }
+  ],
+  friendship: [
+    { label: 'daisy',  petalColor:'#fffaf0', petalColor2:'#fffaf0', center:'#e8c468' },
+    { label: 'meadow', petalColor:'#eaf2d6', petalColor2:'#eaf2d6', center:'#7a9a4a' },
+    { label: 'sky',    petalColor:'#e4eefc', petalColor2:'#e4eefc', center:'#6f9fcf' }
+  ],
+  justbecause: [
+    { label: 'wildflower', petalColor:'#9aa4d9', petalColor2:'#7e8bcb', center:'#e8c468' },
+    { label: 'lavender',   petalColor:'#c3b8e8', petalColor2:'#a190d6', center:'#5f4a8a' },
+    { label: 'periwinkle', petalColor:'#7ea8d9', petalColor2:'#5f86c2', center:'#e8c468' }
+  ]
+};
+function getVariants(themeId){ return FLOWER_VARIANTS[themeId] || FLOWER_VARIANTS.justbecause; }
+
 function petalDims(shape){
   switch(shape){
     case 'thin': return { rx: 4.5, ry: 21 };
@@ -44,8 +69,11 @@ function petalDims(shape){
 }
 
 // Builds a stylised line-art flower as an inline SVG string.
-function makeFlowerSVG(themeId, size){
-  const t = THEMES[themeId] || THEMES.justbecause;
+function makeFlowerSVG(themeId, size, variantIdx){
+  const base = THEMES[themeId] || THEMES.justbecause;
+  const variants = getVariants(themeId);
+  const v = variants[variantIdx || 0] || variants[0];
+  const t = Object.assign({}, base, v);
   const { rx, ry } = petalDims(t.petalShape);
   size = size || 90;
   let petals = '';
@@ -110,6 +138,7 @@ function spawnFloaties(themeId){
   const host = document.getElementById('floaties');
   host.innerHTML = '';
   const count = window.innerWidth < 640 ? 8 : 14;
+  const falls = t.floaty === 'petal'; // falling blossom drifts down from the top instead of floating up
   for (let i = 0; i < count; i++){
     const outer = document.createElement('div');
     outer.className = 'floaty';
@@ -119,10 +148,10 @@ function spawnFloaties(themeId){
     const dx = (Math.random() * 140 - 70).toFixed(0) + 'px';
     const rot = (Math.random() * 60 - 30).toFixed(0) + 'deg';
     outer.style.left = left + 'vw';
-    outer.style.bottom = '-10vh';
+    if (falls){ outer.style.top = '-10vh'; } else { outer.style.bottom = '-10vh'; }
     outer.style.setProperty('--dx', dx);
     outer.style.setProperty('--rot', rot);
-    outer.style.animation = `drift-up ${duration}s linear ${delay}s infinite`;
+    outer.style.animation = `${falls ? 'drift-down' : 'drift-up'} ${duration}s linear ${delay}s infinite`;
 
     const inner = document.createElement('div');
     if (t.floaty === 'butterfly'){
@@ -139,10 +168,49 @@ function spawnFloaties(themeId){
 // ---------------------------------------------------------------
 const draft = {
   theme: null,
+  variant: 0,
   music: null, // { type: 'youtube'|'spotify', id, url, start, title }
   to: '', from: '', body: '',
-  photos: []
+  font: 'caveat',
+  photos: [],
+  stickers: []
 };
+
+// ---------------------------------------------------------------
+// Fonts + stickers
+// ---------------------------------------------------------------
+const FONT_OPTIONS = [
+  { id: 'caveat',  label: 'Caveat',         family: "'Caveat', cursive" },
+  { id: 'kalam',   label: 'Kalam',          family: "'Kalam', cursive" },
+  { id: 'shadows', label: 'Shadows',        family: "'Shadows Into Light', cursive" },
+  { id: 'homemade',label: 'Homemade Apple', family: "'Homemade Apple', cursive" },
+  { id: 'dancing', label: 'Dancing Script', family: "'Dancing Script', cursive" },
+  { id: 'patrick', label: 'Patrick Hand',   family: "'Patrick Hand', cursive" }
+];
+function fontFamilyFor(id){
+  const f = FONT_OPTIONS.find(f => f.id === id);
+  return f ? f.family : FONT_OPTIONS[0].family;
+}
+function applyNoteFont(id){
+  document.documentElement.style.setProperty('--note-font', fontFamilyFor(id));
+}
+
+const STICKERS = {
+  heart:   '<svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.7-10-9.2C.3 8.6 2 5 5.5 5c2 0 3.5 1.2 4.5 2.8C11 6.2 12.5 5 14.5 5 18 5 19.7 8.6 22 11.8 19.5 16.3 12 21 12 21z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>',
+  star:    '<svg viewBox="0 0 24 24"><path d="M12 2l2.6 6.6L22 9l-5.4 4.8L18 21l-6-3.6L6 21l1.4-7.2L2 9l7.4-.4z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>',
+  moon:    '<svg viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>',
+  sparkle: '<svg viewBox="0 0 24 24"><path d="M12 2c0 5 3 8 8 8-5 0-8 3-8 8 0-5-3-8-8-8 5 0 8-3 8-8z" fill="currentColor"/></svg>',
+  leaf:    '<svg viewBox="0 0 24 24"><path d="M4 20C4 10 12 4 20 4c0 8-6 16-16 16z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6 18C10 14 14 10 18 6" stroke="currentColor" stroke-width="1.2"/></svg>',
+  sun:     '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5" fill="none" stroke="currentColor" stroke-width="1.4"/><g stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="23"/><line x1="1" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="23" y2="12"/><line x1="4.2" y1="4.2" x2="6.3" y2="6.3"/><line x1="17.7" y1="17.7" x2="19.8" y2="19.8"/><line x1="4.2" y1="19.8" x2="6.3" y2="17.7"/><line x1="17.7" y1="6.3" x2="19.8" y2="4.2"/></g></svg>',
+  cloud:   '<svg viewBox="0 0 24 24"><path d="M7 18a4.5 4.5 0 0 1-.5-8.97A5 5 0 0 1 16 8.4 3.998 3.998 0 0 1 17 16.3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/><path d="M7 18h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
+  bow:     '<svg viewBox="0 0 24 24"><path d="M12 12L4 6v12l8-6z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M12 12l8-6v12l-8-6z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/></svg>',
+  note:    '<svg viewBox="0 0 24 24"><path d="M9 18V5l10-2v13" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="6.5" cy="18" r="2.5" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="16.5" cy="16" r="2.5" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>',
+  feather: '<svg viewBox="0 0 24 24"><path d="M20 4C10 4 4 10 4 20l4-4M20 4c0 10-6 16-16 16M20 4L8 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  umbrella:'<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 18 0z" fill="none" stroke="currentColor" stroke-width="1.4"/><line x1="12" y1="12" x2="12" y2="20" stroke="currentColor" stroke-width="1.4"/><path d="M12 20a2 2 0 0 0 3 1.7" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>',
+  camera:  '<svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M8 7l1.5-2.5h5L16 7" fill="none" stroke="currentColor" stroke-width="1.4"/><circle cx="12" cy="13.5" r="3.4" fill="none" stroke="currentColor" stroke-width="1.4"/></svg>'
+};
+const STICKER_ORDER = Object.keys(STICKERS);
+const MAX_STICKERS = 4;
 
 let ytPlayer = null;
 let ytDuration = 0;
@@ -177,14 +245,24 @@ function buildOccasionGrid(){
       document.querySelectorAll('.occasion-card').forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
       draft.theme = id;
+      draft.variant = 0;
       document.body.setAttribute('data-theme', id);
       spawnFloaties(id);
       document.getElementById('occasion-next').disabled = false;
+      // let the pick register visually, then move on automatically —
+      // the "next" button stays as a manual fallback for anyone who wants it.
+      clearTimeout(window.__occasionAdvanceTimer);
+      window.__occasionAdvanceTimer = setTimeout(() => {
+        if (document.getElementById('screen-occasion').classList.contains('active')) showScreen('music');
+      }, 420);
     });
     grid.appendChild(card);
   });
 }
-document.getElementById('occasion-next').addEventListener('click', () => showScreen('music'));
+document.getElementById('occasion-next').addEventListener('click', () => {
+  clearTimeout(window.__occasionAdvanceTimer);
+  showScreen('music');
+});
 
 // ---------------------------------------------------------------
 // 5. Music step
@@ -340,11 +418,31 @@ document.getElementById('music-next').addEventListener('click', () => {
 // ---------------------------------------------------------------
 // 6. Note step
 // ---------------------------------------------------------------
+function buildFontPicker(){
+  const row = document.getElementById('font-chip-row');
+  row.innerHTML = '';
+  FONT_OPTIONS.forEach(f => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'font-chip' + (f.id === draft.font ? ' selected' : '');
+    chip.style.fontFamily = f.family;
+    chip.textContent = f.label;
+    chip.addEventListener('click', () => {
+      draft.font = f.id;
+      applyNoteFont(f.id);
+      row.querySelectorAll('.font-chip').forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+    });
+    row.appendChild(chip);
+  });
+}
+
 document.getElementById('note-next').addEventListener('click', () => {
   draft.to = document.getElementById('note-to').value.trim() || 'you';
   draft.from = document.getElementById('note-from').value.trim() || 'me';
   draft.body = document.getElementById('note-body').value.trim();
   showScreen('photos');
+  updateSizeMeter();
 });
 
 // ---------------------------------------------------------------
@@ -357,22 +455,28 @@ document.getElementById('photo-input').addEventListener('change', (e) => {
   e.target.value = '';
 });
 
+// Photos are square-cropped and shrunk hard, since they're the single biggest
+// contributor to link length (everything lives inside the URL — see README).
+const PHOTO_SIZE = 160;
+const PHOTO_QUALITY = 0.45;
 function compressPhoto(file){
   const reader = new FileReader();
   reader.onload = () => {
     const img = new Image();
     img.onload = () => {
-      const maxW = 480;
-      const scale = Math.min(1, maxW / img.width);
+      const side = Math.min(img.width, img.height);
+      const sx = (img.width - side) / 2;
+      const sy = (img.height - side) / 2;
       const canvas = document.createElement('canvas');
-      canvas.width = img.width * scale;
-      canvas.height = img.height * scale;
+      canvas.width = PHOTO_SIZE;
+      canvas.height = PHOTO_SIZE;
       const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.55);
+      ctx.drawImage(img, sx, sy, side, side, 0, 0, PHOTO_SIZE, PHOTO_SIZE);
+      const dataUrl = canvas.toDataURL('image/jpeg', PHOTO_QUALITY);
       if (draft.photos.length < 2){
         draft.photos.push(dataUrl);
         renderPhotoPreviews();
+        updateSizeMeter();
       }
     };
     img.src = reader.result;
@@ -390,8 +494,37 @@ function renderPhotoPreviews(){
     thumb.querySelector('button').addEventListener('click', () => {
       draft.photos.splice(i, 1);
       renderPhotoPreviews();
+      updateSizeMeter();
     });
     row.appendChild(thumb);
+  });
+}
+
+function buildStickerGrid(){
+  const grid = document.getElementById('sticker-grid');
+  grid.innerHTML = '';
+  STICKER_ORDER.forEach(id => {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'sticker-chip' + (draft.stickers.includes(id) ? ' selected' : '');
+    chip.innerHTML = STICKERS[id];
+    chip.addEventListener('click', () => {
+      const i = draft.stickers.indexOf(id);
+      if (i > -1){
+        draft.stickers.splice(i, 1);
+      } else {
+        if (draft.stickers.length >= MAX_STICKERS) return;
+        draft.stickers.push(id);
+      }
+      buildStickerGrid();
+      updateSizeMeter();
+    });
+    grid.appendChild(chip);
+  });
+  const atMax = draft.stickers.length >= MAX_STICKERS;
+  grid.querySelectorAll('.sticker-chip').forEach((chip, idx) => {
+    const id = STICKER_ORDER[idx];
+    if (atMax && !draft.stickers.includes(id)) chip.classList.add('disabled');
   });
 }
 
@@ -401,12 +534,33 @@ document.getElementById('photos-next').addEventListener('click', () => {
 });
 
 // ---------------------------------------------------------------
+// Link-size meter — lets people see, before they hit "get link",
+// roughly how long the final URL will be (photos are the main cost).
+// ---------------------------------------------------------------
+function updateSizeMeter(){
+  const payload = buildPayload();
+  const len = encodeLetter(payload).length;
+  let cls = 'ok', label = 'nice and short';
+  if (len > 9000){ cls = 'bad'; label = 'very long — try removing a photo'; }
+  else if (len > 4000){ cls = 'warn'; label = 'a bit long, but should still work'; }
+  const pct = Math.min(100, Math.round((len / 10000) * 100));
+  const html = `link length: ~${len.toLocaleString()} characters
+    <span class="bar"><span style="width:${pct}%"></span></span> ${label}`;
+  ['size-meter', 'size-meter-preview'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el){ el.className = 'size-meter ' + cls; el.innerHTML = html; }
+  });
+}
+
+// ---------------------------------------------------------------
 // 8. Letter card rendering (shared by preview + recipient view)
 // ---------------------------------------------------------------
 function buildLetterCardHTML(state){
-  const flower = makeFlowerSVG(state.theme, 100);
+  const flower = makeFlowerSVG(state.theme, 100, state.variant || 0);
   const photosHtml = (state.photos && state.photos.length)
     ? `<div class="letter-photos">${state.photos.map(p => `<img src="${p}">`).join('')}</div>` : '';
+  const stickersHtml = (state.stickers && state.stickers.length)
+    ? `<div class="letter-stickers">${state.stickers.map(id => `<span>${STICKERS[id] || ''}</span>`).join('')}</div>` : '';
 
   let songRow = '';
   if (state.music && state.music.type === 'youtube'){
@@ -434,6 +588,7 @@ function buildLetterCardHTML(state){
         <div class="letter-to">Dear ${escapeHtml(state.to)},</div>
         <div class="letter-body">${escapeHtml(state.body)}</div>
         ${photosHtml}
+        ${stickersHtml}
         <div class="letter-sign"><span>Sincerely,</span><strong>${escapeHtml(state.from)}</strong></div>
       </div>
       ${state.music && state.music.type === 'youtube' ? `<div class="seam"><div class="seam-btn" id="seam-btn">♪</div></div>` : ''}
@@ -446,6 +601,8 @@ function escapeHtml(s){
 
 function renderPreview(){
   document.body.setAttribute('data-theme', draft.theme || 'justbecause');
+  applyNoteFont(draft.font);
+  buildVariantSwatches();
   const mount = document.getElementById('preview-mount');
   mount.innerHTML = buildLetterCardHTML(draft);
   const flowerEl = mount.querySelector('.flower-slot svg');
@@ -455,6 +612,26 @@ function renderPreview(){
   if (seamBtn && draft.music && draft.music.type === 'youtube'){
     seamBtn.addEventListener('click', () => togglePreviewYouTube());
   }
+  updateSizeMeter();
+}
+
+function buildVariantSwatches(){
+  const host = document.getElementById('variant-swatches');
+  if (!host) return;
+  host.innerHTML = '';
+  const variants = getVariants(draft.theme || 'justbecause');
+  variants.forEach((v, i) => {
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.className = 'swatch' + (i === (draft.variant || 0) ? ' selected' : '');
+    dot.style.background = `linear-gradient(135deg, ${v.petalColor}, ${v.petalColor2})`;
+    dot.title = v.label;
+    dot.addEventListener('click', () => {
+      draft.variant = i;
+      renderPreview();
+    });
+    host.appendChild(dot);
+  });
 }
 
 let previewYtPlayer = null;
@@ -495,24 +672,54 @@ function startLoopWatch(player, start, loopLen){
 // ---------------------------------------------------------------
 // 9. Get link (encode state → URL, copy to clipboard)
 // ---------------------------------------------------------------
-function toBase64Url(obj){
-  const b64 = btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
-  return b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+// The whole letter lives inside the link (see README), so every byte here
+// counts. LZString gets real-world notes and JSON structure down a lot;
+// photos are the one part that doesn't compress well, which is why they're
+// aggressively downsized in compressPhoto() above and shown in the size meter.
+function encodeLetter(obj){
+  const json = JSON.stringify(obj);
+  if (window.LZString){
+    return 'z' + LZString.compressToEncodedURIComponent(json);
+  }
+  // fallback if the compression library didn't load, still URL-safe
+  const b64 = btoa(unescape(encodeURIComponent(json)));
+  return 'b' + b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
-function fromBase64Url(str){
-  str = str.replace(/-/g, '+').replace(/_/g, '/');
-  while (str.length % 4) str += '=';
-  return JSON.parse(decodeURIComponent(escape(atob(str))));
+function decodeLetter(str){
+  const tag = str[0];
+  const rest = str.slice(1);
+  // new format: 'z' = LZString-compressed, 'b' = plain base64url (fallback path)
+  if (tag === 'z' && window.LZString){
+    const json = LZString.decompressFromEncodedURIComponent(rest);
+    if (json != null) return JSON.parse(json);
+  }
+  if (tag === 'b'){
+    let s = rest.replace(/-/g, '+').replace(/_/g, '/');
+    while (s.length % 4) s += '=';
+    return JSON.parse(decodeURIComponent(escape(atob(s))));
+  }
+  // legacy links made before this version had no prefix tag at all —
+  // try decoding the *whole* string as plain base64url so old links still open.
+  let s = str.replace(/-/g, '+').replace(/_/g, '/');
+  while (s.length % 4) s += '=';
+  return JSON.parse(decodeURIComponent(escape(atob(s))));
+}
+
+function buildPayload(){
+  return {
+    theme: draft.theme || 'justbecause',
+    variant: draft.variant || 0,
+    music: draft.music,
+    to: draft.to, from: draft.from, body: draft.body,
+    font: draft.font || 'caveat',
+    photos: draft.photos,
+    stickers: draft.stickers
+  };
 }
 
 document.getElementById('btn-get-link').addEventListener('click', () => {
-  const payload = {
-    theme: draft.theme || 'justbecause',
-    music: draft.music,
-    to: draft.to, from: draft.from, body: draft.body,
-    photos: draft.photos
-  };
-  const encoded = toBase64Url(payload);
+  const payload = buildPayload();
+  const encoded = encodeLetter(payload);
   const url = `${location.origin}${location.pathname}?l=${encoded}`;
   const btn = document.getElementById('btn-get-link');
   const done = (ok) => { btn.textContent = ok ? 'copied ✓' : 'copy failed — long-press to select'; setTimeout(() => btn.textContent = 'get link', 2200); };
@@ -531,6 +738,7 @@ function renderRecipientView(state){
   document.getElementById('app').hidden = true;
   document.getElementById('view').hidden = false;
   document.body.setAttribute('data-theme', state.theme || 'justbecause');
+  applyNoteFont(state.font || 'caveat');
   spawnFloaties(state.theme || 'justbecause');
 
   const mount = document.getElementById('view-mount');
@@ -596,14 +804,25 @@ document.getElementById('btn-make-own').addEventListener('click', () => {
   const encoded = params.get('l');
   if (encoded){
     try {
-      const state = fromBase64Url(encoded);
+      const state = decodeLetter(encoded);
       renderRecipientView(state);
       return;
     } catch (e){
       console.warn('Could not read this letter link.', e);
+      document.getElementById('app').hidden = false;
+      document.getElementById('view').hidden = true;
+      const landing = document.getElementById('screen-landing');
+      const note = document.createElement('p');
+      note.className = 'tagline';
+      note.style.color = '#a83232';
+      note.textContent = "that link couldn't be opened — it may be incomplete (truncated when it was shared) or from an older version of this site.";
+      landing.insertBefore(note, landing.querySelector('.btn-primary'));
     }
   }
   buildOccasionGrid();
+  buildFontPicker();
+  buildStickerGrid();
+  applyNoteFont(draft.font);
   document.body.setAttribute('data-theme', 'justbecause');
   spawnFloaties('justbecause');
 })();
