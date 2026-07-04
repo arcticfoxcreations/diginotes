@@ -249,20 +249,11 @@ function buildOccasionGrid(){
       document.body.setAttribute('data-theme', id);
       spawnFloaties(id);
       document.getElementById('occasion-next').disabled = false;
-      // let the pick register visually, then move on automatically —
-      // the "next" button stays as a manual fallback for anyone who wants it.
-      clearTimeout(window.__occasionAdvanceTimer);
-      window.__occasionAdvanceTimer = setTimeout(() => {
-        if (document.getElementById('screen-occasion').classList.contains('active')) showScreen('music');
-      }, 420);
     });
     grid.appendChild(card);
   });
 }
-document.getElementById('occasion-next').addEventListener('click', () => {
-  clearTimeout(window.__occasionAdvanceTimer);
-  showScreen('music');
-});
+document.getElementById('occasion-next').addEventListener('click', () => showScreen('music'));
 
 // ---------------------------------------------------------------
 // 5. Music step
