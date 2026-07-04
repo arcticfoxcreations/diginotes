@@ -3,7 +3,7 @@
    Paper-and-ink base, with a per-occasion accent + motif layer
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500;1,600&family=Caveat:wght@500;600;700&family=Space+Mono:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;1,500;1,600&family=Caveat:wght@500;600;700&family=Space+Mono:wght@400;700&family=Kalam:wght@400;700&family=Shadows+Into+Light&family=Homemade+Apple&family=Dancing+Script:wght@500;700&family=Patrick+Hand&display=swap');
 
 :root{
   --paper: #faf6ee;
@@ -15,6 +15,7 @@
   --accent-soft: #e9c9ce;
   --radius-lg: 22px;
   --radius-sm: 10px;
+  --note-font: 'Caveat', cursive;
 }
 
 /* ---- occasion themes ---- */
@@ -240,13 +241,72 @@ input:focus, textarea:focus{ border-color: var(--accent); }
 .note-line label{ font-size:.8rem; color: var(--accent-deep, var(--accent)); white-space:nowrap; }
 .note-textarea{
   width:100%; min-height: 160px; resize: vertical;
-  font-family:'Caveat', cursive; font-size:1.4rem; line-height:1.5;
+  font-family: var(--note-font); font-size:1.4rem; line-height:1.5;
   border:none; border-top: 1px solid #ece4d6; margin-top:.6em; padding-top: .8em;
+  transition: font-family .15s ease;
 }
 .note-sign{ display:flex; justify-content:flex-end; gap:.5em; margin-top: .8em; align-items:baseline; }
 .note-sign label{ font-size:.85rem; color: var(--ink-soft); }
-.note-sign input{ max-width: 180px; font-family:'Caveat', cursive; font-size:1.3rem; }
-.note-line input{ font-family:'Caveat', cursive; font-size:1.3rem; }
+.note-sign input{ max-width: 180px; font-family: var(--note-font); font-size:1.3rem; }
+.note-line input{ font-family: var(--note-font); font-size:1.3rem; }
+
+/* ---------------- font picker ---------------- */
+.font-picker{ margin: 1.4em 0 .2em; text-align:left; }
+.font-picker p.hint{ margin: 0 0 .6em; text-align:left; }
+.font-chip-row{ display:flex; gap:8px; flex-wrap:wrap; }
+.font-chip{
+  border:1.5px solid #ddd3c2; background:#fffdf8; border-radius: 999px;
+  padding: .4em 1em; font-size:1.05rem; cursor:pointer; color: var(--ink-soft);
+  transition: all .16s ease;
+}
+.font-chip:hover{ border-color: var(--accent); transform: translateY(-1px); }
+.font-chip.selected{ border-color: var(--accent); background: var(--accent-soft); color: var(--ink); }
+
+/* ---------------- sticker picker + stickers on letter ---------------- */
+.sticker-picker{ margin-top: 1.8em; text-align:left; }
+.sticker-picker p.hint{ margin: 0 0 .7em; text-align:left; }
+.sticker-grid{
+  display:grid; grid-template-columns: repeat(8, 1fr); gap:8px;
+  max-width: 460px; margin: 0 auto;
+}
+.sticker-chip{
+  border:1.5px solid #ddd3c2; background:#fffdf8; border-radius: var(--radius-sm);
+  padding:.5em; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition: all .16s ease; aspect-ratio: 1;
+}
+.sticker-chip svg{ width: 22px; height:22px; }
+.sticker-chip:hover{ border-color: var(--accent); transform: translateY(-2px); }
+.sticker-chip.selected{ border-color: var(--accent); background: var(--accent-soft); }
+.sticker-chip.disabled{ opacity:.3; cursor:not-allowed; }
+.sticker-picker-note{ font-size:.75rem; color: var(--ink-soft); margin-top:.6em; text-align:left; }
+
+.letter-stickers{ display:flex; gap:14px; margin: .4em 0 .2em; }
+.letter-stickers svg{ width: 26px; height:26px; opacity:.9; }
+.letter-stickers span:nth-child(odd){ display:inline-block; transform: rotate(-8deg); }
+.letter-stickers span:nth-child(even){ display:inline-block; transform: rotate(7deg); }
+
+/* ---------------- customize panel on preview screen ---------------- */
+.customize-panel{
+  max-width: 460px; margin: 0 auto 1.6em; text-align:left;
+  border:1.5px solid #ddd3c2; border-radius: var(--radius-lg);
+  background: #fffdf8; padding: 1.2em 1.4em;
+}
+.customize-row{ display:flex; align-items:center; gap:10px; margin: .5em 0; flex-wrap:wrap; }
+.customize-row .cz-label{ font-size:.72rem; letter-spacing:.06em; text-transform:uppercase; color: var(--ink-soft); min-width: 84px; }
+.swatch{
+  width: 26px; height:26px; border-radius:50%; cursor:pointer; border: 2px solid transparent;
+  box-shadow: 0 1px 3px rgba(0,0,0,.15); transition: all .15s ease;
+}
+.swatch:hover{ transform: scale(1.1); }
+.swatch.selected{ border-color: var(--ink); transform: scale(1.12); }
+
+/* ---------------- link size meter ---------------- */
+.size-meter{ font-size:.72rem; color: var(--ink-soft); margin-top: 1em; letter-spacing:.02em; }
+.size-meter .bar{ display:inline-block; width:70px; height:6px; border-radius:4px; background:#e8e0d0; margin: 0 6px -1px; overflow:hidden; }
+.size-meter .bar span{ display:block; height:100%; border-radius:4px; transition: width .2s ease, background .2s ease; }
+.size-meter.ok .bar span{ background:#6f8f4a; }
+.size-meter.warn .bar span{ background:#d97a3f; }
+.size-meter.bad .bar span{ background:#a83232; }
 
 /* ---------------- photos step ---------------- */
 .photo-drop{
@@ -283,7 +343,7 @@ input:focus, textarea:focus{ border-color: var(--accent); }
 }
 .letter-to{ color: var(--accent-deep, var(--accent)); font-size:.95rem; margin-bottom: .9em; }
 .letter-body{
-  font-family:'Caveat', cursive;
+  font-family: var(--note-font);
   font-size: 1.55rem;
   line-height: 1.55;
   color: var(--ink);
@@ -292,7 +352,7 @@ input:focus, textarea:focus{ border-color: var(--accent); }
 }
 .letter-sign{ text-align:right; margin-top: 1.4em; }
 .letter-sign span{ display:block; color: var(--ink-soft); font-size:.85rem; }
-.letter-sign strong{ font-family:'Caveat', cursive; font-size:1.5rem; font-weight:600; color: var(--ink); }
+.letter-sign strong{ font-family: var(--note-font); font-size:1.5rem; font-weight:600; color: var(--ink); }
 
 .letter-photos{ display:flex; gap:8px; margin: 1.2em 0 .2em; }
 .letter-photos img{ width: 76px; height:76px; object-fit:cover; border-radius:8px; border: 3px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,.15); transform: rotate(-3deg); }
@@ -357,10 +417,20 @@ input:focus, textarea:focus{ border-color: var(--accent); }
   from{ transform: translateY(110vh) translateX(0) rotate(0deg); }
   to{ transform: translateY(-15vh) translateX(var(--dx, 40px)) rotate(var(--rot, 25deg)); }
 }
+@keyframes drift-down{
+  from{ transform: translateY(-15vh) translateX(0) rotate(0deg); }
+  to{ transform: translateY(110vh) translateX(var(--dx, 40px)) rotate(var(--rot, 25deg)); }
+}
 @keyframes flutter{
   0%,100%{ transform: translateY(0) rotate(-6deg); }
   50%{ transform: translateY(-14px) rotate(6deg); }
 }
+@keyframes pick-pulse{
+  0%{ box-shadow: 0 0 0 0 var(--accent-soft); }
+  70%{ box-shadow: 0 0 0 10px transparent; }
+  100%{ box-shadow: 0 0 0 0 transparent; }
+}
+.occasion-card.selected{ animation: pick-pulse .5s ease; }
 
 @media (max-width: 640px){
   .occasion-grid{ grid-template-columns: repeat(2,1fr); gap:10px; }
