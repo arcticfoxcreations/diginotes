@@ -1,8 +1,8 @@
 // ---------------------------------------------------------------
 // 0. Configuration - ADD YOUR KEYS HERE
 // ---------------------------------------------------------------
-const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
-const SUPABASE_KEY = 'YOUR_ANON_KEY';
+const SUPABASE_URL = 'https://myezfpifwwlzggqfsgts.supabase.co/rest/v1/';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15ZXpmcGlmd3dsemdncWZzZ3RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxNjczNDcsImV4cCI6MjA5ODc0MzM0N30.G_DFS9W6GCTgbXD8eOJLuzEHKtAUP_1P-p6YDL1cgFg';
 const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 
 // ---------------------------------------------------------------
