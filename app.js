@@ -3,7 +3,7 @@
    Paste your Supabase project URL + anon key below, then see
    the setup steps in the chat reply for the one-time table setup.
    ============================================================ */
-const SUPABASE_URL = 'https://myezfpifwwlzggqfsgts.supabase.co/rest/v1/';
+const SUPABASE_URL = 'https://myezfpifwwlzggqfsgts.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im15ZXpmcGlmd3dsemdncWZzZ3RzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODMxNjczNDcsImV4cCI6MjA5ODc0MzM0N30.G_DFS9W6GCTgbXD8eOJLuzEHKtAUP_1P-p6YDL1cgFg';
 const sb = (window.supabase && SUPABASE_URL.includes('supabase.co') && !SUPABASE_URL.includes('YOUR_PROJECT_ID'))
   ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
