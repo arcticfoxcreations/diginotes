@@ -25,24 +25,12 @@ DigiNotes allows users to write a letter, add music, attach photos, customize it
 6. Generate a shareable link
 7. Share it with anyone
 
-## Tech Stack
+## Why DigiNotes?
 
-### Frontend
+Most messages disappear in a crowded chat.
+DigiNotes helps you create something more personal — a letter with music, memories, and thoughtful design that feels special to receive.
 
-- HTML5
-- CSS3
-- Vanilla JavaScript
-
-### Backend
-
-- Supabase
-
-### Integrations
-
-- YouTube IFrame API
-- Spotify Embed Player
-- Google Fonts
 
 ## License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License. 
