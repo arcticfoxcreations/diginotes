@@ -32,4 +32,3 @@ That's it — no build step, no dependencies to install. The site does load one 
 - **Autoplay**: no site can force audio/video to play with sound before the visitor taps something — that's a browser rule, not a choice this site makes.
 - **No accounts, no server**: nothing is ever stored anywhere except inside the link itself. If you lose the link, the letter is gone — there's no "my letters" list to recover it from. That's the tradeoff for zero setup and zero cost.
 - **Old links**: links made before this update used a slightly different, uncompressed format. This version can still read those old links (it recognizes the difference automatically), so nobody's existing letter link breaks.
-Made with love
